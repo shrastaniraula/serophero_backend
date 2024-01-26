@@ -56,34 +56,59 @@ class RegisterView(APIView):
             message = f" Your otp for registration continuation is {otp}."
             send_email(request, [serializer.validated_data['email']], message)
             
-            request.session['username'] = user.username
-            return Response({'verification_code': 'Enter verification code for successful registeration.'})
+            request.session['email'] = user.email
+            return Response({'verification_code': 'Enter verification code for successful registeration.', 'otp': otp})
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class OTPView(APIView):
+#     def post(self, request):
+#         otp = request.data['entered_otp']
+#         sess_email = request.session['email']
+#         print()
+#         print()
+#         print()
+#         print()
+#         print(sess_email)
+#         print()
+#         print()
+#         print()
+#         print()
+
+#         otp_key = request.session['otp_secret_key']
+#         otp_valid_until = request.session['otp_valid_date']
+
+
+#         if otp_key is not None and otp_valid_until is not None:
+#             valid_until = datetime.fromisoformat(otp_valid_until)
+            
+#             print(valid_until)
+#             # print(datetime.now())
+#             if valid_until > datetime.now():
+#                 print("inside datetime")
+#                 totp = pyotp.TOTP(otp_key, interval= 60)
+#                 if totp.verify(otp):
+#                     print("inside verification")
+#                     user = User.objects.get(email= sess_email)
+#                     user.is_active = True
+#                     user.save()
+#                     return Response({"success": "successful registration"})
+                
+#         return Response({"nothing"})
 
 class OTPView(APIView):
     def post(self, request):
         otp = request.data['entered_otp']
-        username = request.session['username']
+        email = request.data['email']
 
-        otp_key = request.session['otp_secret_key']
-        otp_valid_until = request.session['otp_valid_date']
-
-
-        if otp_key is not None and otp_valid_until is not None:
-            valid_until = datetime.fromisoformat(otp_valid_until)
+        
+        if otp == "correct":
             
-            print(valid_until)
             print(datetime.now())
-            if valid_until > datetime.now():
-                print("inside datetime")
-                totp = pyotp.TOTP(otp_key, interval= 60)
-                if totp.verify(otp):
-                    print("inside verification")
-                    user = User.objects.get(username= username)
-                    user.is_active = True
-                    user.save()
-                    return Response({"success": "successful registration"})
+            user = User.objects.get(email= email)
+            user.is_active = True
+            user.save()
+            return Response({"success": "successful registration"})
                 
         return Response({"nothing"})
 

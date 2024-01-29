@@ -52,12 +52,14 @@ class RegisterView(APIView):
             user.set_password(serializer.validated_data['password'])
             user.save()
 
-            otp = send_otp(request)
+            otp, valid_date = send_otp(request)
             message = f" Your otp for registration continuation is {otp}."
-            send_email(request, [serializer.validated_data['email']], message)
+            subject = "OTP code verification"
+            email = serializer.validated_data['email']
+            send_email(request, [email], message)
             
-            request.session['email'] = user.email
-            return Response({'verification_code': 'Enter verification code for successful registeration.', 'otp': otp})
+            
+            return Response({'success': 'Enter verification code for successful registeration.', 'otp': otp, 'email': email })
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -65,15 +67,6 @@ class RegisterView(APIView):
 #     def post(self, request):
 #         otp = request.data['entered_otp']
 #         sess_email = request.session['email']
-#         print()
-#         print()
-#         print()
-#         print()
-#         print(sess_email)
-#         print()
-#         print()
-#         print()
-#         print()
 
 #         otp_key = request.session['otp_secret_key']
 #         otp_valid_until = request.session['otp_valid_date']
@@ -100,6 +93,7 @@ class OTPView(APIView):
     def post(self, request):
         otp = request.data['entered_otp']
         email = request.data['email']
+
 
         
         if otp == "correct":

@@ -15,12 +15,12 @@ def send_otp( request):
     valid_date = datetime.now() + timedelta(minutes=1)
     request.session['otp_valid_date'] = str(valid_date)
     print(otp)
-    return otp
+    return otp, valid_date
 
 
-def send_email(request, recipient_list, message):
+def send_email(request, recipient_list, message, subject):
 
-    subject= "OTP Verification"
+
 
     message= f"""Hello there, 
 Thank you for joining SeroPhero. 

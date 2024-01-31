@@ -9,13 +9,13 @@ from django.shortcuts import render
 from django.core.mail import send_mail
 
 def send_otp( request):
-    totp= pyotp.TOTP(pyotp.random_base32(), interval= 60)
+    totp= pyotp.TOTP(pyotp.random_base32(), interval= 120)
     otp = totp.now()
-    request.session['otp_secret_key'] = totp.secret
-    valid_date = datetime.now() + timedelta(minutes=1)
-    request.session['otp_valid_date'] = str(valid_date)
+    # request.session['otp_secret_key'] = totp.secret
+    # valid_date = datetime.now() + timedelta(minutes=1)
+    # request.session['otp_valid_date'] = str(valid_date)
     print(otp)
-    return otp, valid_date
+    return otp, totp.secret
 
 
 def send_email(request, recipient_list, message, subject):

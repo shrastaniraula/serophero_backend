@@ -1,11 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
-from user.serializers import UserSerializer
 from .models import Business
 from user.models import User
-from .serializers import BusinessSerializer
+from .serializers import BusinessSerializer, UserSerializer
 
 class RegisterBusinessView(APIView):
 
@@ -27,16 +25,19 @@ class AllUsersBusiness(APIView):
         users = User.objects.all()
         user_business_data = []
 
+        
         for user in users:
+            
             try:
                 business = Business.objects.get(user=user)
                 business_serializer = BusinessSerializer(business)
             except Business.DoesNotExist:
                 business_serializer = None
+                
+            user_seriliazers=UserSerializer(user)
 
-            user_serializer = UserSerializer(user)
             user_data = {
-                "user": user_serializer.data,
+                "user": user_seriliazers.data,
                 "business": business_serializer.data if business_serializer else None,
             }
 

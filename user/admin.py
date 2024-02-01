@@ -18,7 +18,7 @@ class UserAdmin(admin.ModelAdmin):
     inlines = [BusinessInline]
 
     fieldsets = [
-        ('Personal information', {'fields': ['first_name', 'last_name', 'email', "address"]}),
+        ('Personal information', {'fields': ['first_name', 'last_name', 'email', 'address', 'image']}),
         ('Account information', {'fields': ['username', 'password', "phone_no"]}),
         ('User choice information', {'fields': ['user_type', 'authority_role', 'is_active', 'is_superuser', 'is_staff']}),
         ('Reports and blacklists', {'fields': ['report_count', 'blacklisted']}),

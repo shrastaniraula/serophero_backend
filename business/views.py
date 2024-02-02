@@ -21,7 +21,7 @@ class RegisterBusinessView(APIView):
 
 
 class AllUsersBusiness(APIView):
-    def get(self, request):
+    def post(self, request):
         users = User.objects.all()
         user_business_data = []
 
@@ -33,7 +33,7 @@ class AllUsersBusiness(APIView):
                 business_serializer = BusinessSerializer(business)
             except Business.DoesNotExist:
                 business_serializer = None
-                
+
             user_seriliazers=UserSerializer(user)
 
             user_data = {

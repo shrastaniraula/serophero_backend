@@ -5,7 +5,7 @@ from user.models import User
 
 class Business(models.Model):
     name = models.CharField(max_length=255)
-    images = ArrayField(models.ImageField(upload_to='business_images/', blank=True), blank=True, null=True)
+    images = ArrayField(models.ImageField(upload_to='business_images/', blank=True, null= True), blank=True, null=True)
     description = models.TextField()
     is_verified = models.BooleanField(
     "verified",

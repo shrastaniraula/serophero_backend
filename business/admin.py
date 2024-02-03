@@ -22,9 +22,10 @@ class BusinessAdminForm(forms.ModelForm):
 
     images = forms.ImageField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=False)
 
-    def clean_images(self):
-        images = self.cleaned_data.get('images', [])
-        return [image for image in images]
+    # def clean_images(self):
+    #     images = self.cleaned_data.get('images', [])
+
+    #     return [image for image in images]
 
 class BusinessAdmin(admin.ModelAdmin):
     form = BusinessAdminForm

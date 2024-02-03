@@ -13,7 +13,7 @@ class User(AbstractUser, PermissionsMixin):
     username = models.CharField(unique=False, null=True,blank=True,max_length=50)
     phone_no = models.CharField(max_length=15, unique=True)
     address = models.CharField(max_length=255)
-    image = models.ImageField(upload_to= "user_images/")
+    image = models.ImageField(upload_to= "user_images/", null= True, blank= True)
 
     # User type choices
     USER_TYPE_CHOICES = (

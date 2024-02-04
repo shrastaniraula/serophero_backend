@@ -3,19 +3,19 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Business
 from user.models import User
-from .serializers import BusinessSerializer, UserSerializer
+from .serializers import BusinessSerializer, UserSerializer, BusinessRegisterSerializer
 
 class RegisterBusinessView(APIView):
 
     def post(self, request):
         
-        serializer = BusinessSerializer(data=request.data)
+        serializer = BusinessRegisterSerializer(data=request.data)
 
         if serializer.is_valid():
             business = serializer.save()
             business.save()
 
-            return Response({'Business registration': 'Business is regsitered. You will be informed about verification later'})
+            return Response({'success': 'Business is regsitered. You will be informed about verification later'})
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

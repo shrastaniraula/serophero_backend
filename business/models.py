@@ -3,9 +3,17 @@ from django.contrib.postgres.fields import ArrayField
 from user.models import User
 
 
+def business_directory_path(instance, filename):
+    return f'business_images/{instance.name}/{filename}'
+
 class Business(models.Model):
     name = models.CharField(max_length=255)
-    images = ArrayField(models.ImageField(upload_to='business_images/', blank=True, null= True), blank=True, null=True)
+    citiz_front_image = models.ImageField(upload_to= business_directory_path, verbose_name="Citizenship photo front")
+    citiz_back_image = models.ImageField(upload_to= business_directory_path, verbose_name="Citizenship photo back")
+    optional_docs1_image = models.ImageField(upload_to= business_directory_path, null= True, blank= True, verbose_name="Additional verifying photo 1")
+    optional_docs2_image = models.ImageField(upload_to= business_directory_path, null= True, blank= True, verbose_name="Additional verifying photo 2")
+    optional_docs3_image = models.ImageField(upload_to= business_directory_path, null= True, blank= True, verbose_name="Additional verifying photo 3")
+
     description = models.TextField()
     is_verified = models.BooleanField(
     "verified",
@@ -17,6 +25,8 @@ class Business(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+    
+
 
     
 

@@ -12,7 +12,7 @@ class BusinessSerializer(serializers.ModelSerializer):
 class BusinessRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Business
-        fields = ('id','name', 'description', 'citiz_front_image', 'citiz_back_image', 'optional_docs1_image', 'optional_docs2_image', 'optional_docs3_image', 'user')
+        fields = ('name', 'description', 'citiz_front_image', 'citiz_back_image', 'optional_docs1_image', 'optional_docs2_image', 'optional_docs3_image', 'user')
 
 
 

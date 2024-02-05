@@ -26,14 +26,12 @@ class LoginView(APIView):
 
             if user is not None:
                 refresh = RefreshToken.for_user(user)
+                refresh_token = str(refresh)
+                access_token = str(refresh.access_token)
 
-                response_data ={
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
 
                 update_last_login(user, user)
-                return Response({'token': response_data}, status=status.HTTP_200_OK)
+                return Response({ 'refreshtoken':refresh_token, 'access': access_token }, status=status.HTTP_200_OK)
 
             else:
                 return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)

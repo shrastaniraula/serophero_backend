@@ -8,16 +8,32 @@ from .serializers import BusinessSerializer, UserSerializer, BusinessRegisterSer
 class RegisterBusinessView(APIView):
 
     def post(self, request):
-        
-        serializer = BusinessRegisterSerializer(data=request.data)
+        citizen_front = request.FILES['citiz_front_image']
+        citizen_back = request.FILES['citiz_back_image']
+        docs1 = request.FILES['optional_docs1_image']
+        docs2 = request.FILES['optional_docs2_image']
+        docs3 = request.FILES['optional_docs3_image']
+        name = request.data['name']
+        description = request.data['description']
+        user = request.data['user']
 
-        if serializer.is_valid():
-            business = serializer.save()
-            business.save()
+        print(request.data)
+        user_instance = User.objects.get(id=user)
+        object = Business.objects.create(user=user_instance, name = name, description=description, citiz_front_image =citizen_front, citiz_back_image= citizen_back,optional_docs1_image= docs1,optional_docs2_image= docs2,optional_docs3_image= docs3 )
+        if object:
+            object.save()
+        # serializer = BusinessRegisterSerializer(data=request.data)
+
+        # print(serializer)
+        # if serializer.is_valid():
+        #     business = serializer.save()
+        #     business.save()
 
             return Response({'success': 'Business is regsitered. You will be informed about verification later'})
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response( status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class AllUsersBusiness(APIView):

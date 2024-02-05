@@ -16,6 +16,7 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'email')
     list_filter = ('user_type', 'blacklisted')
     inlines = [BusinessInline]
+    readonly_fields = ('display_image',)
 
     fieldsets = [
         ('Personal information', {'fields': ['first_name', 'last_name', 'email', 'address', 'image']}),

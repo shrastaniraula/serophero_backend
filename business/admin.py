@@ -26,7 +26,7 @@ from .models import Business
 class BusinessAdmin(admin.ModelAdmin):
     # form = BusinessAdminForm
     list_display = ('name','description', 'is_verified', 'user')
-    # list_filter = ('is_verified')
+    list_filter = ('is_verified',)
 
 
     # def save_model(self, request, obj, form, change):

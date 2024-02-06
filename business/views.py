@@ -56,6 +56,7 @@ class AllUsersBusiness(APIView):
                 "user": user_seriliazers.data,
                 "business": business_serializer.data if business_serializer else None,
             }
+            print(user_data)
 
             user_business_data.append(user_data)
 

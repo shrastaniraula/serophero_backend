@@ -1,9 +1,7 @@
-from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from events.serializers import EventSerializer
-
 from user.models import User
 from .models import Event
 
@@ -23,13 +21,6 @@ class CreateEventView(APIView):
         user_instance = User.objects.get(id=by)
 
         allowed_members_list = User.objects.filter(id__in=allowed_members)
-        # allowed_members_list = []
-        # for each in allowed_members:
-        #     print(f"\n\n{each}\n\n")
-        #     users_objects = User.objects.get(id=each)
-        #     allowed_members_list.append(users_objects)
-
-
 
         event = Event.objects.create(
             title=title,

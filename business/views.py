@@ -44,7 +44,7 @@ class AllUsersBusiness(APIView):
         for user in users:
             
             try:
-                business = Business.objects.get(user=user)
+                business = Business.objects.get(user=user, is_verified = True)
                 business_serializer = BusinessSerializer(business)
             except Business.DoesNotExist:
                 business_serializer = None

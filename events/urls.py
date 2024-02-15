@@ -5,6 +5,4 @@ from .views import CreateEventView, RetrieveView
 urlpatterns = [
     path('post_event/', CreateEventView.as_view()),
     path('fetch_event/', RetrieveView.as_view()),
-
-
 ]

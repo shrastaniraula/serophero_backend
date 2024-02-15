@@ -1,6 +1,5 @@
 from django.utils.timezone import datetime
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
 from user.models import User
 
 class Event(models.Model):

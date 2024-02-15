@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+from events.serializers import EventSerializer
 
 from user.models import User
 from .models import Event
@@ -48,10 +49,21 @@ class CreateEventView(APIView):
         
 class RetrieveView(APIView):
     def post(self, request):
-        user = request.data['user']
-        events = Event.objects.filter(allowed_members= user)
+        user_id = request.data.get('user')
+        event_data = []
 
-        return Response({'success': 'Success','events': events})
+        if user_id:
+            try:
+                user = User.objects.get(id=user_id)
+                events = Event.objects.filter(allowed_members=user)
+                
+                for event in events:
+                    serialized_event = EventSerializer(event).data
+                    event_data.append(serialized_event)
 
-
-
+                return Response({"events": event_data})
+            
+            except User.DoesNotExist:
+                return Response({"error": "User does not exist"}, status=400)
+        
+        return Response({"error": "User ID is required"}, status=400)

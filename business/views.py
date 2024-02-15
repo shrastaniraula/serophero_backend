@@ -23,7 +23,6 @@ class RegisterBusinessView(APIView):
         if object:
             object.save()
         # serializer = BusinessRegisterSerializer(data=request.data)
-
         # print(serializer)
         # if serializer.is_valid():
         #     business = serializer.save()

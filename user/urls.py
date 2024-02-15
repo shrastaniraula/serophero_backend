@@ -7,6 +7,4 @@ urlpatterns = [
     path('register/', RegisterView.as_view()),
     path('token/', TokenView.as_view()),
     path('otp/', OTPView.as_view()),
-
-
 ]

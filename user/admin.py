@@ -12,7 +12,7 @@ class BusinessInline(admin.StackedInline):  # or admin.TabularInline for a more 
     extra = 1 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'user_type', 'report_count', 'blacklisted')
+    list_display = ('id','username', 'email', 'user_type', 'report_count', 'blacklisted')
     search_fields = ('username', 'email')
     list_filter = ('user_type', 'blacklisted')
     inlines = [BusinessInline]

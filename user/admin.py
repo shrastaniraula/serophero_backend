@@ -26,11 +26,11 @@ class UserAdmin(admin.ModelAdmin):
         ('Groups and Permissions', {'fields': ['groups', 'user_permissions']})
     ]
 
-class ReportAdmin(admin.ModelAdmin):
-    list_display = ('user', 'reason', 'by', 'reported_date')
-    search_fields = ('user__username', 'by__username')
-    list_filter = ('reported_date',)
+# class ReportAdmin(admin.ModelAdmin):
+#     list_display = ('user', 'reason', 'by', 'reported_date')
+#     search_fields = ('user__username', 'by__username')
+#     list_filter = ('reported_date',)
 
 # Register your models with the admin site
 admin.site.register(User, UserAdmin)
-admin.site.register(Report, ReportAdmin)
+# admin.site.register(Report, ReportAdmin)

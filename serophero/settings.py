@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'business.apps.BusinessConfig',
     'events.apps.EventsConfig',
     'news.apps.NewsConfig',
+    'communications.apps.CommunicationsConfig',
+    'reports.apps.ReportsConfig',
 
     'rest_framework',
     # 'rest_framework.authtoken',

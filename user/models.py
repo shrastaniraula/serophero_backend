@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractUser, Group, PermissionsMixin
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
 from django.db import models
+from news.models import News
 # from business.models import Business
 
 def user_image_path(instance, filename):
@@ -63,7 +64,7 @@ class User(AbstractUser, PermissionsMixin):
 
 class Report(models.Model):
     user = models.ForeignKey(User, related_name='reports', on_delete=models.CASCADE, null= True)
-    # post = models.ForeignKey(News, related_name='reports', on_delete=models.CASCADE, null= True)
+    post = models.ForeignKey(News, related_name='reports', on_delete=models.CASCADE, null= True)
     reason = models.TextField(verbose_name="reason of report")
     by = models.ForeignKey(User, related_name='reported_by', on_delete=models.CASCADE, verbose_name="reported by")
     # warning = models.ForeignKey(Warnings, related_name='warning_id', on_delete=models.CASCADE, verbose_name="led to warning")

@@ -1,7 +1,6 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-
 from news.models import News
 from news.serializers import NewsSerializer
 from user.models import User
@@ -37,22 +36,20 @@ class NewsView(APIView):
             news_description = request.data['news_description']
             news_image = request.FILES['news_image']
 
-            # Use get to directly retrieve the user, assuming the ID exists
             author = User.objects.get(id=user_id)
 
-            # Alternatively, handle User.DoesNotExist exception if needed
-            # author = User.objects.get(id=user_id)
+
         except User.DoesNotExist:
             return Response({"error": "User does not exist"}, status=400)
         except KeyError as e:
             return Response({"error": f"Missing required field: {str(e)}"}, status=400)
 
-        # Create the News instance without using a serializer
         news = News.objects.create(
             author=author,
             news_heading=news_heading,
             news_description=news_description,
             news_image=news_image
         )
+        
 
         return Response({"success": "Successfully posted news"})

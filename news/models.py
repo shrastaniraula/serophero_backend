@@ -11,4 +11,6 @@ class News(models.Model):
     "verified",
     default=False,
     )
+    report_count = models.IntegerField(default=0)
+
 

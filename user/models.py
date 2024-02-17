@@ -36,13 +36,8 @@ class User(AbstractUser, PermissionsMixin):
     blacklisted = models.BooleanField(default=False)
 
 
-    # image field
+    # REQUIRED_FIELDS=['phone_no', 'first_name', 'last_name']
 
-    REQUIRED_FIELDS=['phone_no', 'first_name', 'last_name']
-
-    def update_report_count(self):
-        self.report_count = self.report.count()
-        self.save()
 
     def __str__(self):
         return f"{self.username}"

@@ -1,9 +1,8 @@
 from django.db import models
 from django.dispatch import receiver
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save
 from news.models import News
 from user.models import User
-from django.db.models import F
 
 class Warning(models.Model):
     warning_date = models.DateTimeField(auto_now=True)
@@ -18,20 +17,44 @@ class Blacklist(models.Model):
 
 
 class Report(models.Model):
-    user = models.ForeignKey(User, related_name='reports', on_delete=models.CASCADE, null= True, blank = True)
-    post = models.ForeignKey(News, related_name='reports', on_delete=models.CASCADE, null= True, blank = True)
-    reason = models.TextField(verbose_name="reason of report")
-    by = models.ForeignKey(User, related_name='reported_by', on_delete=models.CASCADE, verbose_name="reported by")
+    user = models.ForeignKey(User, related_name='user_reports', on_delete=models.CASCADE, null= True, blank = True, verbose_name="Reported User")
+    post = models.ForeignKey(News, related_name='news_report', on_delete=models.CASCADE, null= True, blank = True, verbose_name="Reported News")
+    reason = models.TextField(verbose_name="Reason of report")
+    by = models.ForeignKey(User, related_name='reported_by', on_delete=models.CASCADE, verbose_name="Reported by")
     # warning = models.ForeignKey(Warnings, related_name='warning_id', on_delete=models.CASCADE, verbose_name="led to warning")
     reported_date = models.DateTimeField(auto_now=True)
 
 
-
-
-# Signal receivers to update report count
 @receiver(post_save, sender=Report)
-@receiver(post_delete, sender=Report)
-def update_user_report_count(sender, instance, **kwargs):
-    instance.user.report_count = F('reports__count')
-    instance.user.save()
+def update_report_count(sender, instance, created, **kwargs):
+    if created:
+        if instance.post is None and instance.user:
+            user = instance.user
+            user.report_count += 1
+            user.save()
+
+            print(user.report_count)
+
+            # Check if a warning should be issued
+            if user.report_count >= 5:
+                # Create a warning
+                Warning.objects.create(message="Exceeded report threshold", user_warned=user)
+
+            # Check if blacklisting should occur
+            if user.report_count >= 15:
+                # Create a blacklist entry
+                Blacklist.objects.create(user=user)
+
+        if instance.user is None and instance.post:
+            post = instance.post
+            post.report_count += 1
+            post.save()
+
+            if post.report_count >= 15:
+                post.is_verified = False
+                post.save()
+
+
+
+
 

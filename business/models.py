@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from user.models import User
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 
 def business_directory_path(instance, filename):
@@ -26,9 +28,14 @@ class Business(models.Model):
     def __str__(self):
         return f"{self.name}"
     
+@receiver(post_save, sender=Business)
+def update_user_type(sender, instance, created, **kwargs):
+    if not created:
+        user = instance.user
+        user.user_type = 'business'
+        user.save()
 
 
-    
 
 
 

@@ -1,11 +1,8 @@
 from django.contrib import admin
 from business.models import Business
-from .models import User, Report
+from .models import User
 
-class ReportInline(admin.StackedInline):
-    model = Report
-    extra = 1
-    fk_name = 'user'
+
 
 class BusinessInline(admin.StackedInline):  # or admin.TabularInline for a more compact view
     model = Business
@@ -15,7 +12,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('id','username', 'email', 'user_type', 'report_count', 'blacklisted')
     search_fields = ('username', 'email')
     list_filter = ('user_type', 'blacklisted')
-    inlines = [BusinessInline, ReportInline]
+    inlines = [BusinessInline]
     readonly_fields = ('display_image',)
 
     fieldsets = [

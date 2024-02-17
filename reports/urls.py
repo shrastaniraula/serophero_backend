@@ -1,7 +1,8 @@
-# from django.urls import path
-# from .views import NewsView
+from django.urls import path
+from reports.views import ReportView
 
-# urlpatterns = [
-#     path('news/', NewsView.as_view()),
 
-# ]
+urlpatterns = [
+    path('report/', ReportView.as_view()),
+
+]

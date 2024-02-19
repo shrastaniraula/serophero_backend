@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+from business.serializers import UserSerializer
 from news.models import News
 from news.serializers import NewsSerializer
 from user.models import User
@@ -11,22 +12,20 @@ class NewsView(APIView):
         news_data = []
 
         for each_news in news:
-            serialized_data = NewsSerializer(each_news).data
-            news_data.append(serialized_data)
+            serialized_news_data = NewsSerializer(each_news).data
 
-        return Response({"news": news_data})
+            author = serialized_news_data['author']
+            user = User.objects.get(id = author )
+            serialized_user_data = UserSerializer(user).data
+            
+            news_user_data = {
+                "user": serialized_news_data,
+                "news": serialized_user_data
+            }
+            news_data.append(news_user_data)
+
+        return Response(news_data)
     
-    # def post(self,request):
-    #     user = request.data['author']
-    #     news_heading = request.data['news_heading']
-    #     news_description = request.data['news_description']
-    #     news_image = request.FILES['news_image']
-
-    #     author = User.objects.filter(id = user)
-
-    #     news = News.objects.create( author = author, news_description = news_description, news_heading= news_heading, news_image= news_image)
-    #     news.save()
-    #     return Response({"success": "Successfully posted news"})
 
 
     def post(self, request):
@@ -51,5 +50,4 @@ class NewsView(APIView):
             news_image=news_image
         )
         
-
         return Response({"success": "Successfully posted news"})

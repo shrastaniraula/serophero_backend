@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.core.mail import send_mail
 
 def send_otp( request):
-    totp= pyotp.TOTP(pyotp.random_base32(), interval= 120)
+    totp= pyotp.TOTP(pyotp.random_base32(), interval= 600)
     otp = totp.now()
     # request.session['otp_secret_key'] = totp.secret
     # valid_date = datetime.now() + timedelta(minutes=1)

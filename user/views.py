@@ -69,17 +69,8 @@ class OTPView(APIView):
         sess_email = request.data['email']
         otp_key = request.data['otp_key']
 
-
-
-        # if otp_key is not None and otp_valid_until is not None:
         if otp_key is not None:
-            # print("inside otp")
-            # valid_until = datetime.fromisoformat(otp_valid_until)
-            # print(valid_until)
-            # print(datetime.now())
-            # if valid_until > datetime.now():
-            #     print("inside datetime")
-            totp = pyotp.TOTP(otp_key, interval= 120)
+            totp = pyotp.TOTP(otp_key, interval= 600)
             if totp.verify(otp):
                 # print("inside verification")
                 user = User.objects.get(email= sess_email)
@@ -91,24 +82,6 @@ class OTPView(APIView):
 
                 
         return Response({"error": "Sorry, something went wrong."})
-
-# class OTPView(APIView):
-#     def post(self, request):
-#         otp = request.data['entered_otp']
-#         email = request.data['email']
-
-        
-#         if otp == "correct":
-            
-#             print(datetime.now())
-#             user = User.objects.get(email= email)
-#             user.is_active = True
-#             user.save()
-#             return Response({"success": "successful registration"})
-                
-#         return Response({"nothing"})
-
-
 
 class TokenView(APIView):
     permission_classes=[IsAuthenticated]

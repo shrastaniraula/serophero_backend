@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Business
 from user.models import User
-from .serializers import BusinessSerializer, UserSerializer, BusinessRegisterSerializer
+from .serializers import BusinessUserSerializer
+from user.serializers import UserSerializer
 
 class RegisterBusinessView(APIView):
 
@@ -36,27 +37,32 @@ class RegisterBusinessView(APIView):
 
 
 class AllUsersBusiness(APIView):
-    def post(self, request):
+    def get(self, request):
         users = User.objects.all()
         user_business_data = []
+        logged_user = request.user
 
+        if logged_user.is_authenticated:
+            for user in users:
+                
+                business = Business.objects.filter(user=user, is_verified = True).first()
+                if business:
+                    user_business_data.append({
+                        "user_id": user.id,
+                        "user_name":  f"{user.first_name} {user.last_name}",
+                        "user_image": user.image,
+                        "user_type": user.user_type,
+                        "business_name": business.name
+                    })
+                else:
+                    user_business_data.append({
+                        "user_id": user.id,
+                        "user_name":  f"{user.first_name} {user.last_name}",
+                        "user_image": f"{user.image}",
+                        "user_type": user.user_type,
+                        "business_name": ""
+                    })
         
-        for user in users:
-            
-            try:
-                business = Business.objects.get(user=user, is_verified = True)
-                business_serializer = BusinessSerializer(business)
-            except Business.DoesNotExist:
-                business_serializer = None
+            serialized_user_business_data = BusinessUserSerializer(user_business_data, many = True).data
 
-            user_seriliazers=UserSerializer(user)
-
-            user_data = {
-                "user": user_seriliazers.data,
-                "business": business_serializer.data if business_serializer else None,
-            }
-            print(user_data)
-
-            user_business_data.append(user_data)
-
-        return Response(user_business_data, status=status.HTTP_200_OK)
+            return Response(serialized_user_business_data)

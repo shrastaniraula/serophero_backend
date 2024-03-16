@@ -6,7 +6,7 @@ class News(models.Model):
     news_heading = models.CharField(max_length= 255)
     news_description = models.TextField()
     news_image = models.ImageField(upload_to= "news_images/", verbose_name="News thumbnail")
-    post_date= models.DateField( auto_now=True)
+    post_date= models.DateTimeField( auto_now_add=True)
     is_verified = models.BooleanField(
     "verified",
     default=False,

@@ -1,30 +1,33 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from business.serializers import UserSerializer
+from user.serializers import UserSerializer
 from news.models import News
 from news.serializers import NewsSerializer
 from user.models import User
 
 class NewsView(APIView):
     def get(self, request):
-        news = News.objects.filter(is_verified = True)
-        news_data = []
+        user = request.user
+        if user.is_authenticated:
+            news = News.objects.filter(is_verified = True)
+            news_data = []
 
-        for each_news in news:
-            serialized_news_data = NewsSerializer(each_news).data
-
-            author = serialized_news_data['author']
-            user = User.objects.get(id = author )
-            serialized_user_data = UserSerializer(user).data
-            
-            news_user_data = {
-                "user": serialized_news_data,
-                "news": serialized_user_data
-            }
-            news_data.append(news_user_data)
-
-        return Response(news_data)
+            for each_news in news:
+                user = User.objects.get(email = each_news.author )
+                news_data.append({"news_id": each_news.id,
+                                    "news_title": each_news.news_heading,
+                                    "news_description": each_news.news_description,
+                                    "news_image": f"media/{each_news.news_image}",
+                                    "news_date": each_news.post_date,
+                                    "user_name": f"{user.first_name} {user.last_name}",
+                                    "user_id": user.id
+                                    })
+                
+            serialized_news_data = NewsSerializer(news_data, many= True).data
+                
+            return Response(serialized_news_data)
+        # return Response("token unauthorized",status = status.HTTP_401_UNAUTHORIZED)
     
 
 

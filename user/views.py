@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import pyotp
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -6,8 +7,9 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth.models import update_last_login
+from business.models import Business
 from user.models import User
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, UserDetailsSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.decorators import login_required
@@ -17,12 +19,12 @@ from .utils import send_email, send_otp
 class LoginView(APIView):
 
     def post(self, request):
-            username = request.data['username']
+            email = request.data['email']
             password = request.data['password']
 
-            print(username, password)
+            print(email, password)
 
-            user = authenticate(request, username=username, password=password)
+            user = authenticate(request, username=email, password=password)
 
             if user is not None:
                 refresh = RefreshToken.for_user(user)
@@ -31,7 +33,7 @@ class LoginView(APIView):
 
 
                 update_last_login(user, user)
-                return Response({ 'refreshtoken':refresh_token, 'access': access_token }, status=status.HTTP_200_OK)
+                return Response({ 'refresh_token':refresh_token, 'access_token': access_token }, status=status.HTTP_200_OK)
 
             else:
                 return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -82,10 +84,60 @@ class OTPView(APIView):
 
                 
         return Response({"error": "Sorry, something went wrong."})
-
-class TokenView(APIView):
-    permission_classes=[IsAuthenticated]
     
-    # @login_required
+
+class HomeView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        return Response({'hii': 'good job'})
+        user = request.user
+        # if user.is_authenticated:
+        print(user)
+        # user_obj=User.objects.get(email=user)
+        user = str(user)
+        
+        return Response({"userName": user})
+        # else:
+        #     return Response({"userName": "hello"})
+
+class VisitProfile(APIView):
+    def post(self, request):
+        logged_user = request.user
+        user = request.data['user']
+        view_profile_details = []
+
+        if logged_user.is_authenticated:
+            user_details = User.objects.get(id = user)
+            business_details = Business.objects.filter(user = user_details).first()
+            if business_details:
+                view_profile_details.append({"user_id": user_details.id,
+                                            "user_fullname": f"{user_details.first_name} {user_details.last_name}",
+                                            "user_name": user_details.username,
+                                            "user_location": user_details.address,
+                                            "user_contact": user_details.phone_no,
+                                            "user_email": user_details.email,
+                                            "user_image": user_details.image,
+                                            "user_type": user_details.user_type,
+                                            "authority_role": user_details.authority_role,
+                                            "business_name": business_details.name,
+                                            "business_description": business_details.description
+                                            })
+            else:
+                view_profile_details.append({"user_id": user_details.id,
+                                            "user_fullname": f"{user_details.first_name} {user_details.last_name}",
+                                            "user_name": user_details.username,
+                                            "user_location": user_details.address,
+                                            "user_contact": user_details.phone_no,
+                                            "user_email": user_details.email,
+                                            "user_image": user_details.image,
+                                            "user_type": user_details.user_type,
+                                            "authority_role": user_details.authority_role,
+                                            "business_name": "",
+                                            "business_description": ""
+                                            })
+            serialized_view_profile_data = UserDetailsSerializer(view_profile_details, many=True).data
+            return Response(serialized_view_profile_data)
+
+
+            
+

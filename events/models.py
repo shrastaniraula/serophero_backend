@@ -7,8 +7,8 @@ class Event(models.Model):
     title = models.CharField(max_length= 255)
     description = models.TextField()
     location = models.CharField(max_length= 100)
-    post_date= models.DateField( auto_now=True)
-    event_date= models.DateField( auto_now=False, default= datetime.now())
+    post_date= models.DateTimeField( auto_now=True)
+    event_date= models.DateTimeField( auto_now=False, default= datetime.now())
     event_image = models.ImageField(upload_to= "events_images/", verbose_name="Event thumbnail")
     allowed_members = models.ManyToManyField(User, related_name='allowed_events')
 

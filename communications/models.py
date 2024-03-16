@@ -7,15 +7,15 @@ class Suggestions(models.Model):
     datetime = models.DateTimeField(auto_now = True)
 
 class Message(models.Model):
-    to = models.ForeignKey(User,
-            related_name='message_to',
+    receiver = models.ForeignKey(User,
+            related_name='sent_messages',
             on_delete=models.CASCADE)
-    user = models.ForeignKey(User,
-            related_name='message_from',
-            on_delete=models.CASCADE)
+    sender = models.ForeignKey(User,
+            related_name='received_messages',
+            on_delete=models.CASCADE,)
     created = models.DateTimeField(auto_now_add=True)
     message = models.TextField(null=True)
-    image = models.ImageField(upload_to="messages_image/",null=True)
+    image = models.ImageField(upload_to="messages_image/",null=True, blank=True)
     
     class Meta:
         ordering = ['-created']    

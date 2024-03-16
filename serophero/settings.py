@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'jet',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -81,6 +82,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'serophero.wsgi.application'
+
+ASGI_APPLICATION = 'serophero.asgi.application'
+
 
 
 # Database
@@ -204,3 +208,10 @@ EMAIL_HOST_PASSWORD = 'sxwpfgajywbukjgh'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}

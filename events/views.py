@@ -39,22 +39,29 @@ class CreateEventView(APIView):
             return Response( status=status.HTTP_400_BAD_REQUEST)
         
 class RetrieveView(APIView):
-    def post(self, request):
-        user_id = request.data.get('user')
+    def get(self, request):
+        user = request.user
         event_data = []
 
-        if user_id:
-            try:
-                user = User.objects.get(id=user_id)
-                events = Event.objects.filter(allowed_members=user)
-                
-                for event in events:
-                    serialized_event = EventSerializer(event).data
-                    event_data.append(serialized_event)
-
-                return Response({"events": event_data})
+        if user.is_authenticated:
             
-            except User.DoesNotExist:
-                return Response({"error": "User does not exist"}, status=400)
-        
-        return Response({"error": "User ID is required"}, status=400)
+            user = User.objects.get(id=user.id)
+            events = Event.objects.filter(allowed_members=user)
+            
+            for event in events:
+                event_posted_by = User.objects.get(email = event.by)
+                event_data.append({
+                    "event_id": event.id,
+                    "event_title": event.title,
+                    "event_description": event.description,
+                    "event_date": event.event_date,
+                    "posted_date": event.post_date,
+                    "event_image": f"media/{event.event_image}",
+                    "event_location": event.location,
+                    "posted_by": f"{event_posted_by.first_name} {event_posted_by.last_name}",
+                    "user_id": event_posted_by.id
+                })
+            
+            serialized_event_data = EventSerializer(event_data, many= True).data
+            return Response(serialized_event_data)
+            

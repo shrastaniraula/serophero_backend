@@ -1,7 +1,5 @@
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.views import APIView
-from user.serializers import UserSerializer
 from news.models import News
 from news.serializers import NewsSerializer
 from user.models import User
@@ -30,27 +28,28 @@ class NewsView(APIView):
         # return Response("token unauthorized",status = status.HTTP_401_UNAUTHORIZED)
     
 
+class PostNewsView(APIView):
 
     def post(self, request):
         try:
-            user_id = request.data['author']
-            news_heading = request.data['news_heading']
-            news_description = request.data['news_description']
-            news_image = request.FILES['news_image']
+            print("post news")
+            user = request.user
+            if user.is_authenticated:
+                news_heading = request.data['news_heading']
+                news_description = request.data['news_description']
+                news_image = request.FILES['news_image']
+            
 
-            author = User.objects.get(id=user_id)
+                news = News.objects.create(
+                    author=user,
+                    news_heading=news_heading,
+                    news_description=news_description,
+                    news_image=news_image
+                )
+                
 
-
-        except User.DoesNotExist:
-            return Response({"error": "User does not exist"}, status=400)
         except KeyError as e:
             return Response({"error": f"Missing required field: {str(e)}"}, status=400)
 
-        news = News.objects.create(
-            author=author,
-            news_heading=news_heading,
-            news_description=news_description,
-            news_image=news_image
-        )
         
         return Response({"success": "Successfully posted news"})

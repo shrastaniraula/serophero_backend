@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'news.apps.NewsConfig',
     'communications.apps.CommunicationsConfig',
     'reports.apps.ReportsConfig',
+    'payments.apps.PaymentsConfig',
+
 
     'rest_framework',
     # 'rest_framework.authtoken',

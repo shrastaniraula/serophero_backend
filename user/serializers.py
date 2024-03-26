@@ -1,4 +1,7 @@
 from rest_framework import serializers
+
+from business.serializers import BusinessUserSerializer
+from events.serializers import EventSerializer
 from .models import User
 
         
@@ -26,4 +29,10 @@ class UserDetailsSerializer(serializers.Serializer):
     authority_role = serializers.CharField()
     business_name = serializers.CharField()
     business_description = serializers.CharField()
+
+
+class CombinedHomeSerializer(serializers.Serializer):
+    user_details = UserDetailsSerializer()
+    business_details = BusinessUserSerializer(many=True)
+    event_details = EventSerializer(many=True) 
 

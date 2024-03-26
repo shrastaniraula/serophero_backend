@@ -8,4 +8,7 @@ class BusinessUserSerializer(serializers.Serializer):
     user_image = serializers.CharField()
     user_type = serializers.CharField()
     business_name = serializers.CharField()
+    business_desc = serializers.CharField()
+    business_date = serializers.DateTimeField()
+
 

@@ -38,31 +38,25 @@ class RegisterBusinessView(APIView):
 
 class AllUsersBusiness(APIView):
     def get(self, request):
-        users = User.objects.all()
+        users = User.objects.exclude(id=request.user.id).exclude(is_superuser=True).exclude(is_staff=True)
+
         user_business_data = []
-        logged_user = request.user
 
-        if logged_user.is_authenticated:
-            for user in users:
-                
-                business = Business.objects.filter(user=user, is_verified = True).first()
-                if business:
-                    user_business_data.append({
-                        "user_id": user.id,
-                        "user_name":  f"{user.first_name} {user.last_name}",
-                        "user_image": user.image,
-                        "user_type": user.user_type,
-                        "business_name": business.name
-                    })
-                else:
-                    user_business_data.append({
-                        "user_id": user.id,
-                        "user_name":  f"{user.first_name} {user.last_name}",
-                        "user_image": f"{user.image}",
-                        "user_type": user.user_type,
-                        "business_name": ""
-                    })
-        
-            serialized_user_business_data = BusinessUserSerializer(user_business_data, many = True).data
+        for user in users:
+            business = Business.objects.filter(user=user, is_verified=True).first()
+            user_data = {
+                "user_id": user.id,
+                "user_name": f"{user.first_name} {user.last_name}",
+                "user_image": user.image,
+                "user_type": user.user_type,
+                "business_name": business.name if business else "",
+                "business_desc": business.description if business else "",
+                "business_date": business.created_at if business else ""
 
-            return Response(serialized_user_business_data)
+            }
+            user_business_data.append(user_data)
+
+        # Serialize the user business data
+        serialized_user_business_data = BusinessUserSerializer(user_business_data, many=True).data
+
+        return Response(serialized_user_business_data)

@@ -1,42 +1,49 @@
+import json
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from events.serializers import EventSerializer
 from user.models import User
 from .models import Event
+import ast
+
 
 
 class CreateEventView(APIView):
     def post(self, request):
-        title = request.data['title']
-        description = request.data['description']
-        event_image = request.FILES['event_image']
-        event_date = request.data['event_date']
-        by = request.data['by']
-        allowed_members = request.data['allowed_members']
-        location = request.data['location']
+        user = request.user
+        if user.is_authenticated:
 
+            title = request.data['title']
+            description = request.data['description']
+            event_image = request.FILES['event_image']
+            event_date = request.data['event_date']
+            allowed_members = request.data['allowed_members']
+            location = request.data['location']
 
-        print(title, by, event_date, allowed_members)
-        user_instance = User.objects.get(id=by)
+            print(title, event_date, allowed_members)
 
-        allowed_members_list = User.objects.filter(id__in=allowed_members)
+            print(type(event_date))
 
-        event = Event.objects.create(
-            title=title,
-            description=description,
-            by=user_instance,
-            location= location,
-            event_date = event_date,
-            event_image = event_image
-        )
-        if event: 
-            event.allowed_members.set(allowed_members_list)
-            event.save()
-            return Response({'success': 'Event posted successfully'})
+            event = Event.objects.create(
+                title=title,
+                description=description,
+                by=user,
+                location= location,
+                event_date = event_date,
+                event_image = event_image
+            )
 
-        else:
-            return Response( status=status.HTTP_400_BAD_REQUEST)
+            allowed_members_list = json.loads(allowed_members)
+
+            print(allowed_members_list)
+
+            allowed_members_objs = User.objects.filter(id__in=allowed_members_list)
+            if event: 
+                event.allowed_members.set(allowed_members_objs)
+                event.save()
+                return Response({'success': 'Event posted successfully'})
+
         
 class RetrieveView(APIView):
     def get(self, request):
@@ -45,7 +52,6 @@ class RetrieveView(APIView):
 
         if user.is_authenticated:
             
-            user = User.objects.get(id=user.id)
             events = Event.objects.filter(allowed_members=user)
             
             for event in events:

@@ -1,4 +1,5 @@
-from datetime import datetime
+# from datetime import datetime
+from django.utils import timezone
 import json
 import pyotp
 from rest_framework.views import APIView
@@ -9,10 +10,11 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth.models import update_last_login
 from business.models import Business
 from user.models import User
-from .serializers import RegisterSerializer, UserDetailsSerializer
+from .serializers import CombinedHomeSerializer, RegisterSerializer, UserDetailsSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.decorators import login_required
+from events.models import Event
+
 
 from .utils import send_email, send_otp
 
@@ -91,53 +93,103 @@ class HomeView(APIView):
 
     def get(self, request):
         user = request.user
-        # if user.is_authenticated:
-        print(user)
-        # user_obj=User.objects.get(email=user)
-        user = str(user)
+        if user.is_authenticated:
+            business_details = Business.objects.filter(user=user).first()
+            profile_data = {
+                    "user_id": user.id,
+                    "user_fullname": f"{user.first_name} {user.last_name}",
+                    "user_name": user.username,
+                    "user_location": user.address,
+                    "user_contact": user.phone_no,
+                    "user_email": user.email,
+                    "user_image": user.image.url if user.image else None,
+                    "user_type": user.user_type,
+                    "authority_role": user.authority_role if user.authority_role else "",
+                    "business_name": business_details.name if business_details else "",
+                    "business_description": business_details.description if business_details else ""
+                }
+            
+            upcoming_events = Event.objects.filter(
+                            allowed_members=user,
+                            event_date__gt=timezone.now()  # Filter events with event date greater than current datetime
+                        ).order_by('event_date')[:3]  # Limit the results to three events and order by event date
+    
+            event_data = []
+            for event in upcoming_events:
+                event_posted_by = User.objects.get(email=event.by)
+                event_data.append({
+                    "event_id": event.id,
+                    "event_title": event.title,
+                    "event_description": event.description,
+                    "event_date": event.event_date,
+                    "posted_date": event.post_date,
+                    "event_image": f"media/{event.event_image}",
+                    "event_location": event.location,
+                    "posted_by": f"{event_posted_by.first_name} {event_posted_by.last_name}",
+                    "user_id": event_posted_by.id
+                })
+            
+            business_data =[]
+            recent_businesses = Business.objects.filter(is_verified=True).order_by('-created_at')[:5]
+            for business in recent_businesses:
+                
+                user_data = {
+                "user_id": business.user.id,
+                "user_name": f"{business.user.first_name} {business.user.last_name}",
+                "user_image": business.user.image,
+                "user_type": business.user.user_type,
+                "business_name": business.name if business else "",
+                "business_desc": business.description if business else "",
+                "business_date": business.created_at if business else ""
+                    }
+                business_data.append(user_data)
+            
+
+            serialized_home_data = CombinedHomeSerializer({ 'user_details': profile_data,
+                                    'business_details': business_data,
+                                    'event_details': event_data}).data
         
-        return Response({"userName": user})
-        # else:
-        #     return Response({"userName": "hello"})
+        
+            return Response(serialized_home_data)
+        else:
+            return Response({"userName": "hello"})
+
 
 class VisitProfile(APIView):
     def post(self, request):
         logged_user = request.user
-        user = request.data['user']
+        user_id = request.data.get('user')  # Use get() to safely get the user ID from request data
         view_profile_details = []
 
         if logged_user.is_authenticated:
-            user_details = User.objects.get(id = user)
-            business_details = Business.objects.filter(user = user_details).first()
-            if business_details:
-                view_profile_details.append({"user_id": user_details.id,
-                                            "user_fullname": f"{user_details.first_name} {user_details.last_name}",
-                                            "user_name": user_details.username,
-                                            "user_location": user_details.address,
-                                            "user_contact": user_details.phone_no,
-                                            "user_email": user_details.email,
-                                            "user_image": user_details.image,
-                                            "user_type": user_details.user_type,
-                                            "authority_role": user_details.authority_role,
-                                            "business_name": business_details.name,
-                                            "business_description": business_details.description
-                                            })
-            else:
-                view_profile_details.append({"user_id": user_details.id,
-                                            "user_fullname": f"{user_details.first_name} {user_details.last_name}",
-                                            "user_name": user_details.username,
-                                            "user_location": user_details.address,
-                                            "user_contact": user_details.phone_no,
-                                            "user_email": user_details.email,
-                                            "user_image": user_details.image,
-                                            "user_type": user_details.user_type,
-                                            "authority_role": user_details.authority_role,
-                                            "business_name": "",
-                                            "business_description": ""
-                                            })
-            serialized_view_profile_data = UserDetailsSerializer(view_profile_details, many=True).data
-            return Response(serialized_view_profile_data)
+            try:
+                user_details = User.objects.get(id=user_id)
+                business_details = Business.objects.filter(user=user_details).first()
 
+                # Create a dictionary with user details
+                profile_data = {
+                    "user_id": user_details.id,
+                    "user_fullname": f"{user_details.first_name} {user_details.last_name}",
+                    "user_name": user_details.username,
+                    "user_location": user_details.address,
+                    "user_contact": user_details.phone_no,
+                    "user_email": user_details.email,
+                    "user_image": user_details.image.url if user_details.image else None,  # Assuming image is a FileField or ImageField
+                    "user_type": user_details.user_type,
+                    "authority_role": user_details.authority_role if user_details.authority_role else "",
+                    "business_name": business_details.name if business_details else "",
+                    "business_description": business_details.description if business_details else ""
+                }
+                view_profile_details.append(profile_data)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found'}, status=404)
+
+            # Serialize the user profile data
+            serialized_view_profile_data = UserDetailsSerializer(view_profile_details, many=True).data
+
+            return Response(serialized_view_profile_data)
+        else:
+            return Response({'error': 'User not authenticated'}, status=401)
 
             
 

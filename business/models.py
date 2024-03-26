@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 from user.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.utils import timezone
 
 
 def business_directory_path(instance, filename):
@@ -24,6 +25,7 @@ class Business(models.Model):
             "Unverified users cannot receive payments and are not displayed as business users."
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE, null = False, blank = False)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.name}"
@@ -32,8 +34,10 @@ class Business(models.Model):
 def update_user_type(sender, instance, created, **kwargs):
     if not created:
         user = instance.user
-        user.user_type = 'business'
-        user.save()
+        if instance.is_verified:
+            user.user_type = 'business'
+            user.save()
+
 
 
 

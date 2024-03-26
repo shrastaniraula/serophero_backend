@@ -28,6 +28,8 @@ urlpatterns = [
     path('news/', include('news.urls')),
     path('communication/', include('communications.urls')),
     path('report/', include('reports.urls')),
+    path('payment/', include('payments.urls')),
+
 
 
 

@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from django.contrib.auth.models import update_last_login
 from business.models import Business
-from user.models import User
+from user.models import MobileTokens, User
 from .serializers import CombinedHomeSerializer, RegisterSerializer, UserDetailsSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -21,6 +21,8 @@ from .utils import send_email, send_otp
 class LoginView(APIView):
 
     def post(self, request):
+            phone_key = request.data['phone_key']
+            device_name = request.data['device_name']
             email = request.data['email']
             password = request.data['password']
 
@@ -32,13 +34,28 @@ class LoginView(APIView):
                 refresh = RefreshToken.for_user(user)
                 refresh_token = str(refresh)
                 access_token = str(refresh.access_token)
-
-
                 update_last_login(user, user)
+
+                try:
+                    mobile_token = MobileTokens.objects.get(phone_key = phone_key, user = user)
+                    mobile_token.is_logged_in = True
+                    mobile_token.save()
+                except MobileTokens.DoesNotExist:
+                    mobile_token = MobileTokens.objects.create(phone_key= phone_key, device_name= device_name, user= user, is_logged_in= True)
+
                 return Response({ 'refresh_token':refresh_token, 'access_token': access_token }, status=status.HTTP_200_OK)
 
             else:
                 return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class LogoutView(APIView):
+    def post(self, request):
+        phone_key = request.data['phone_key']
+        mobile_token = MobileTokens.objects.get(phone_key = phone_key)
+        mobile_token.is_logged_in = False
+        mobile_token.save()
+
+        return Response({'success': 'Success'}, status=status.HTTP_200_OK)
 
 
 class RegisterView(APIView):
@@ -62,31 +79,49 @@ class RegisterView(APIView):
             print (otp)
             
             
-            return Response({'success': 'Enter verification code for successful registeration.', 'otp_key': otp_key, 'email': email })
+            return Response({ 'otp_key': otp_key, 'email': email })
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class OTPView(APIView):
     def post(self, request):
         otp = request.data['entered_otp']
-        print(otp)
         sess_email = request.data['email']
         otp_key = request.data['otp_key']
+        purpose = request.data['purpose']
 
         if otp_key is not None:
             totp = pyotp.TOTP(otp_key, interval= 600)
             if totp.verify(otp):
-                # print("inside verification")
                 user = User.objects.get(email= sess_email)
-                user.is_active = True
-                user.save()
-                return Response({"success": "successful registration"})
+                if purpose== "signup":
+                    user.is_active = True
+                    user.save()
+                elif purpose == "reset":
+                    pass_new = request.data['new_password']
+                    user.set_password(pass_new)
+                    user.save()
+
+                return Response({"success": "Task Completed Successfully."})
             else:
                 return Response({"error": "Wrong OTP or time out."})
-
-                
         return Response({"error": "Sorry, something went wrong."})
     
+
+class ResetPassword(APIView):
+    def post(self, request):
+        try:
+            email = request.data['email']
+            otp, otp_key = send_otp(request)
+            message = f" Your otp for password reset continuation is {otp}."
+            subject = "Password reset"
+            send_email(request, [email], message, subject)
+            return Response({'otp_key': otp_key, 'email': email })
+        except:
+            return Response(KeyError)
+
+
+
 
 class HomeView(APIView):
     permission_classes = [IsAuthenticated]
@@ -98,12 +133,12 @@ class HomeView(APIView):
             profile_data = {
                     "user_id": user.id,
                     "user_fullname": f"{user.first_name} {user.last_name}",
-                    "user_name": user.username,
-                    "user_location": user.address,
-                    "user_contact": user.phone_no,
-                    "user_email": user.email,
-                    "user_image": user.image.url if user.image else None,
-                    "user_type": user.user_type,
+                    "user_name": user.username if user.username else "",
+                    "user_location": user.address if user.address else "",
+                    "user_contact": user.phone_no if user.phone_no else "",
+                    "user_email": user.email if user.email else "",
+                    "user_image": user.image.url if user.image else "",
+                    "user_type": user.user_type if user.user_type else "",
                     "authority_role": user.authority_role if user.authority_role else "",
                     "business_name": business_details.name if business_details else "",
                     "business_description": business_details.description if business_details else ""
@@ -128,6 +163,8 @@ class HomeView(APIView):
                     "posted_by": f"{event_posted_by.first_name} {event_posted_by.last_name}",
                     "user_id": event_posted_by.id
                 })
+
+            print(event_data)
             
             business_data =[]
             recent_businesses = Business.objects.filter(is_verified=True).order_by('-created_at')[:5]
@@ -136,8 +173,8 @@ class HomeView(APIView):
                 user_data = {
                 "user_id": business.user.id,
                 "user_name": f"{business.user.first_name} {business.user.last_name}",
-                "user_image": business.user.image,
-                "user_type": business.user.user_type,
+                "user_image": business.user.image if business.user.image else "",
+                "user_type": business.user.user_type if business.user.user_type else "",
                 "business_name": business.name if business else "",
                 "business_desc": business.description if business else "",
                 "business_date": business.created_at if business else ""
@@ -191,5 +228,35 @@ class VisitProfile(APIView):
         else:
             return Response({'error': 'User not authenticated'}, status=401)
 
-            
+
+class UpdateProfile(APIView):
+
+    def post(self, request):
+        user = request.user
+        print(request.POST)
+        if user.is_authenticated:
+            try:
+                if user.user_type == "business":
+                    business = Business.objects.get(user=user)
+                    for key, value in request.POST.items():
+                        if key in ['name', 'description']:
+                            setattr(business, key, value)
+                    business.save()
+                
+                if 'image' in request.FILES:
+                        print("Image")
+                        user.image=request.FILES['image']
+                        
+                for key, value in request.POST.items():
+                    print(key,value)
+                    if hasattr(user, key):
+                        setattr(user, key, value)
+                user.save()
+                return Response({'data': "success"})
+            except Business.DoesNotExist:
+                return Response({"error": "Does not found any business"})
+        else:
+            return Response({"error": "User is not authenticated"})  
+
+
 

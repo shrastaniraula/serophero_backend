@@ -48,12 +48,21 @@ INSTALLED_APPS = [
     'communications.apps.CommunicationsConfig',
     'reports.apps.ReportsConfig',
     'payments.apps.PaymentsConfig',
-
-
+    'adminside.apps.AdminsideConfig',
+    'corsheaders',
     'rest_framework',
     # 'rest_framework.authtoken',
     'rest_framework_simplejwt',
 ]
+
+CORS_ORIGIN_ALLOW_ALL =True
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # Add the origin of your frontend here
+    'http://127.0.0.1:3000',  # Another example
+]
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -162,16 +171,11 @@ REST_FRAMEWORK = {
     ],
 }
 
-# JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
-# JWT_ALGORITHM = 'HS256'
-# JWT_ALLOW_REFRESH = True
-# JWT_EXPIRATION_DELTA = timedelta(minutes=5)
-# JWT_REFRESH_TOKEN_EXPIRATION_DELTA = timedelta(days=7)
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=20),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=100),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=100),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 
@@ -196,6 +200,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 
 ]
+
 AUTH_USER_MODEL = 'user.User'
 
 
@@ -210,7 +215,7 @@ EMAIL_HOST_PASSWORD = 'sxwpfgajywbukjgh'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
-
+x
 
 CHANNEL_LAYERS = {
     "default": {

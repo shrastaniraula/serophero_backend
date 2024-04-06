@@ -2,23 +2,35 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
 from communications.models import Message, Suggestions
-from communications.serializers import MessageListSerializer, MessageSerializer
+from communications.serializers import MessageListSerializer, MessageSerializer, SuggestionsSerializer
 from user.models import User
 from rest_framework import status
 
 
 
 class SuggestionsView(APIView):
-    def post(self, request):
-        try:
-            by = request.data['by']
-            description = request.data['description']
+    def get(self, request):
+        user = request.user
+        if user.is_authenticated:
+            if user.user_type == "authority":
+                suggestions = Suggestions.objects.all()
+                print(suggestions)
+                serialized_data = SuggestionsSerializer(suggestions,many=True).data
+                return Response(serialized_data)
+            else:
+                return Response({"error": "Sorry, only for authority man"}, status= status.HTTP_401_UNAUTHORIZED)
 
-            suggestion = Suggestions.objects.create(by = by, description= description)
-            return Response({"success": "Your suggestion is droped successfully."})
+    def post(self, request):
+        user = request.user
+        description = request.data['description']
+        try:
+            if user.is_authenticated:
+                suggestion = Suggestions.objects.create(by = user, description= description)
+                return Response({"success": "Your suggestion is dropped successfully."})
+            
 
         except:
-            return Response({"error": "Seems like the fields are missing"})
+                return Response({"error": "Seems like the fields are missing"})
         
 class MessageListView(APIView):
 

@@ -8,7 +8,8 @@ class Warning(models.Model):
     warning_date = models.DateTimeField(auto_now=True)
     message = models.TextField()
     user_warned = models.ForeignKey(User, related_name='warning', on_delete=models.CASCADE, null= True)
-    # is_blacklisted = models.BooleanField()
+
+
 
 class Blacklist(models.Model):
     user = models.ForeignKey(User, related_name = 'blacklist', on_delete = models.CASCADE)
@@ -44,6 +45,7 @@ def update_report_count(sender, instance, created, **kwargs):
             if user.report_count >= 15:
                 # Create a blacklist entry
                 Blacklist.objects.create(user=user)
+                # send email
 
         if instance.user is None and instance.post:
             post = instance.post

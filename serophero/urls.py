@@ -21,7 +21,8 @@ from serophero import settings
 
 urlpatterns = [
     path('jet/', include('jet.urls', 'jet')),
-    path('admin/', admin.site.urls),
+    path('super_admin/', admin.site.urls),
+    path('admin/', include('adminside.urls')),
     path('user/', include('user.urls')),
     path('business/', include('business.urls')),
     path('event/', include('events.urls')),

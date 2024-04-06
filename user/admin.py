@@ -1,6 +1,6 @@
 from django.contrib import admin
 from business.models import Business
-from .models import User
+from .models import MobileTokens, User
 
 
 
@@ -31,3 +31,14 @@ class UserAdmin(admin.ModelAdmin):
 # Register your models with the admin site
 admin.site.register(User, UserAdmin)
 # admin.site.register(Report, ReportAdmin)
+#   phone_key = models.CharField(max_length = 255)
+#     device_name = models.CharField(max_length = 255)
+#     user = models.ForeignKey(User, related_name = 'user', on_delete = models.CASCADE)
+#     is_logged_in = models.BooleanField( "logged in", default=True)
+
+
+class MobileTokenAdmin(admin.ModelAdmin):
+    list_display= ('phone_key', 'device_name', 'user', 'is_logged_in')
+
+
+admin.site.register(MobileTokens, MobileTokenAdmin)

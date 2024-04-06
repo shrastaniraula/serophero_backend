@@ -15,7 +15,7 @@ class User(AbstractUser, PermissionsMixin):
     # Common fields
     email = models.EmailField(unique=True)
     username = models.CharField(unique=False, null=True,blank=True,max_length=50)
-    phone_no = models.CharField(max_length=15, unique=True)
+    phone_no = models.CharField(max_length=15, unique=True, null= True, blank= True)
     address = models.CharField(max_length=255)
     image = models.ImageField(upload_to= user_image_path, null= True, blank= True)
 
@@ -50,3 +50,9 @@ class User(AbstractUser, PermissionsMixin):
         return format_html('<strong>There is no image for this entry.<strong>')
     display_image.short_description = 'User image'
     
+
+class MobileTokens(models.Model):
+    phone_key = models.CharField(max_length = 255)
+    device_name = models.CharField(max_length = 255)
+    user = models.ForeignKey(User, related_name = 'user', on_delete = models.CASCADE)
+    is_logged_in = models.BooleanField( "logged in", default=True)

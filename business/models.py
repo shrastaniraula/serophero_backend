@@ -36,7 +36,41 @@ def update_user_type(sender, instance, created, **kwargs):
         user = instance.user
         if instance.is_verified:
             user.user_type = 'business'
+            sendnotification()
             user.save()
+
+
+
+
+import json
+
+import requests
+
+
+def sendnotification(): 
+            print("Devices")
+            url = "https://fcm.googleapis.com/fcm/send"
+            # topic = f"YOUR_TOPIC_NAME{topic_id}"
+            data = {
+                  
+                  "notification": 
+                        {
+                              "title": "Business Verified", 
+                              "body": "Your business has been verified", 
+                              "mutable_content": True,
+                        },
+                  "registration_ids": ['cWxoWp4URImZotBwCXqBqT:APA91bHYtQxOnrpJdr9e1I8ve23Z6I1YiNvLprShBEx4uWp7x_PX1wCML6Wp8urM8FtD84SvI7DM-BfC4chUXyBjUlLFe9tTppbGEudsMmg3da95PVUIpQBjagwExTeNjZx4SWQKkZRT'],
+            }
+
+            headers = {"Content-Type": "application/json", "Authorization": "key=AAAArq22cEQ:APA91bE9pVyI0mhPO_zfJbk4CmgeRxgJorAyGbv-MK1_n9TqoyIuM9PgpuluPh2HgE2bggEkfhcwx1tTFpEx6UmE3mVGkRtm3fijVgdo0SdyZN-o0yEqLtBiHytQIEcDYh4j-9rXRk4P"}
+            payload = json.dumps(data, default=int)
+            print("Payload")
+            print(payload)
+            response = requests.post(url, headers=headers, data=payload)
+            print("Successfully sent notification:", response.status_code)
+
+            # return requests.Response({'data':response.content})
+
 
 
 
